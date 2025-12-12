@@ -6,6 +6,7 @@ import numpy as np
 
 mouse = sc.read_h5ad("data/mouse_dataset.h5ad")
 
+# replace this with observed empirical proportions of cell types in target species data
 orig = pd.Series({
     "oligodendrocyte": 0.26,
     "neuron": 0.25,
@@ -17,6 +18,8 @@ orig = pd.Series({
     "fibroblast": 0.002
 })
 
+# lam = 0 exactly like target species distribution of cell types 
+# lam = 1 completely uniform (perfectly balanced for every cell type of the target species)
 lam = 0.7
 uniform = pd.Series(1 / len(orig), index=orig.index)
 target = (1 - lam) * orig + lam * uniform
@@ -49,7 +52,6 @@ mask = mouse.obs["Sample_ID"].isin(selected)
 mouse_sel = mouse[mask].copy()
 mouse_sel.write("data/mouse_selected.h5ad", compression="gzip")
 
-print("Selected donors:", len(selected))
 print("Final proportions:\n", (current / current.sum()).round(3))
 
 
