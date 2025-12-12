@@ -1,0 +1,139 @@
+library(Seurat)
+library(SeuratObject)
+library(SingleCellExperiment)
+library(scater)
+library(zellkonverter)
+library(ggplot2)
+library(aricode)
+library(mclust)
+library(clevr)
+library(patchwork)
+
+setwd("/Users/sofiapradoarenzana/Desktop/Applied Data Science/Final Project")
+
+mouse_sce <- readH5AD("mouse_uniform.h5ad")
+human_sce <- readH5AD("human_test_sample_2.h5ad")
+
+mouse_seurat <- as.Seurat(mouse_sce, counts = NULL, data = "X")
+human_seurat <- as.Seurat(human_sce, counts = NULL, data = "X")
+
+mouse_seurat$celltype <- mouse_sce$cell_type
+
+rm(mouse_sce, human_sce)
+gc()
+
+mouse_seurat <- FindVariableFeatures(mouse_seurat)
+human_seurat <- FindVariableFeatures(human_seurat)
+
+mouse_seurat <- ScaleData(mouse_seurat)
+human_seurat <- ScaleData(human_seurat)
+
+mouse_seurat <- RunPCA(mouse_seurat, npcs = 50)
+human_seurat <- RunPCA(human_seurat, npcs = 50)
+
+features <- SelectIntegrationFeatures(
+  object.list = list(mouse_seurat, human_seurat),
+  nfeatures = 1200)
+
+anchors <- FindTransferAnchors(
+  reference = mouse_seurat,
+  query = human_seurat,
+  reference.reduction = "pca",
+  normalization.method = "LogNormalize",
+  features = features,
+  k.anchor = 10,
+  k.filter = 200,
+  k.score = 50)
+
+pred <- TransferData(
+  anchorset = anchors,
+  refdata = mouse_seurat$celltype,
+  dims = 1:30)
+
+human_seurat$predicted_celltype <- pred$predicted.id
+human_seurat <- RunUMAP(human_seurat, dims = 1:30)
+p1 <- DimPlot(human_seurat, group.by = "predicted_celltype", label = TRUE) +
+  ggtitle("Seurat Label Transfer Predictions")
+p2 <- DimPlot(human_seurat, group.by = "cell_type", label = TRUE) +
+  ggtitle("True Human Cell Types")
+
+print(p1 | p2) 
+
+true_labels <- human_seurat$cell_type
+pred_labels <- human_seurat$predicted_celltype
+cm <- table(True = true_labels, Predicted = pred_labels)
+
+classes <- intersect(unique(true_labels), unique(pred_labels))
+
+precision <- sapply(classes, function(lbl) {
+  tp <- sum(true_labels == lbl & pred_labels == lbl)
+  fp <- sum(true_labels != lbl & pred_labels == lbl)
+  if (tp + fp == 0) return(NA_real_)
+  tp / (tp + fp)})
+
+recall <- sapply(classes, function(lbl) {
+  tp <- sum(true_labels == lbl & pred_labels == lbl)
+  fn <- sum(true_labels == lbl & pred_labels != lbl)
+  if (tp + fn == 0) return(NA_real_)
+  tp / (tp + fn)})
+
+f1 <- 2 * precision * recall / (precision + recall)
+
+# metrics 
+
+f1_table <- data.frame(CellType = classes,
+  Precision = precision,
+  Recall = recall,
+  F1 = f1)
+testing_accuracy <- mean(pred_labels == true_labels)
+homogeneity <- homogeneity(true_labels, pred_labels)
+ari <- adjustedRandIndex(true_labels, pred_labels)
+nmi <- NMI(true_labels, pred_labels)
+metrics <- data.frame(
+  Metric = c("Testing Accuracy", "Homogeneity", "ARI", "NMI"),
+  Value = c(testing_accuracy, homogeneity, ari, nmi))
+print(metrics)
+write.csv(metrics, "results/transfer_metrics.csv")
+
+cell_counts <- table(true_labels)
+
+common_classes <- intersect(names(cell_counts), names(f1))
+
+weights <- cell_counts[common_classes] / sum(cell_counts)
+
+weighted_f1 <- sum(f1[common_classes] * weights, na.rm = TRUE)
+print(weighted_f1)
+
+cm_df <- as.data.frame(cm)
+colnames(cm_df) <- c("True", "Predicted", "Count")
+
+cm_prop <- prop.table(cm, margin = 1)
+cm_prop_df <- as.data.frame(cm_prop)
+colnames(cm_prop_df) <- c("True", "Predicted", "Prop")
+
+cm_df$True <- factor(cm_df$True, levels = rownames(cm))
+cm_df$Predicted <- factor(cm_df$Predicted, levels = colnames(cm))
+cm_prop_df$True <- factor(cm_prop_df$True, levels = rownames(cm))
+cm_prop_df$Predicted <- factor(cm_prop_df$Predicted, levels = colnames(cm))
+
+p_counts <- ggplot(cm_df, aes(x = Predicted, y = True, fill = Count)) +
+  geom_tile(color = "white", linewidth = 0.2) +
+  geom_text(aes(label = Count), size = 3) +
+  scale_fill_viridis_c() +
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid = element_blank()) +
+  labs(title = "Confusion Matrix (Counts)", x = "Predicted", y = "True", fill = "Count")
+
+p_prop <- ggplot(cm_prop_df, aes(x = Predicted, y = True, fill = Prop)) +
+  geom_tile(color = "white", linewidth = 0.2) +
+  geom_text(aes(label = sprintf("%.1f%%", 100 * Prop)), size = 3) +
+  scale_fill_viridis_c(labels = scales::percent_format(accuracy = 1)) +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid = element_blank()) +
+  labs(title = "Confusion Matrix (Row %)", x = "Predicted", y = "True", fill = "Row %")
+
+print(p_counts)
+print(p_prop)
