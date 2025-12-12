@@ -8,10 +8,10 @@ This repository contains code for cross-species cell type annotation using trans
 
 The goal of this project is to develop and evaluate methods for annotating human cell types using models trained on mouse data. This is particularly useful when labeled human data is scarce but abundant mouse data is available. The project includes:
 
-1. **Data Processing Pipeline**: Preprocessing and alignment of mouse and human scRNA-seq datasets
-2. **Model Implementations**: Three different transfer learning approaches
-3. **Evaluation Metrics**: Evaluation of model performance
-4. **Our Final Report**
+1. Data processing pipeline: Preprocessing and alignment of mouse and human scRNA-seq datasets
+2. Model implementation: Three different transfer learning approaches
+3. Evaluation metrics: Evaluation of model performance
+4. Our Final Report
 
 ## Repository Structure
 
@@ -28,6 +28,7 @@ cross_species_transfer_learning/
 │   ├── harmony_mlp.py        Harmony integration + MLP classifier
 │   ├── knn.py                KNN classifier with PCA
 │   └── seurat_v4.rmd         Seurat v4 label transfer (R)
+```
 
 ## Data Requirements
 
