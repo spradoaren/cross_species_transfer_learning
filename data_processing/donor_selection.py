@@ -6,7 +6,7 @@ import numpy as np
 
 mouse = sc.read_h5ad("data/mouse_dataset.h5ad")
 
-# replace this with observed empirical proportions of cell types in target species data
+# replace this with desired target distribution
 orig = pd.Series({
     "oligodendrocyte": 0.26,
     "neuron": 0.25,
