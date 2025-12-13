@@ -5,12 +5,6 @@ import numpy as np
 from IPython.display import display, Markdown
 import scanpy.external as sce
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import (
-    confusion_matrix,
-    accuracy_score,
-    adjusted_rand_score,
-    normalized_mutual_info_score,
-    classification_report)
 import matplotlib.pyplot as plt
 import seaborn as sns
 import torch
