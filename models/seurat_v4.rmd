@@ -9,8 +9,6 @@ library(mclust)
 library(clevr)
 library(patchwork)
 
-setwd("/Users/sofiapradoarenzana/Desktop/Applied Data Science/Final Project")
-
 mouse_sce <- readH5AD("mouse_uniform.h5ad")
 human_sce <- readH5AD("human_test_sample_2.h5ad")
 
