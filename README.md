@@ -19,7 +19,7 @@ The goal of this project is to develop and evaluate methods for annotating human
 cross_species_transfer_learning/
 ├── data_processing/           Data preprocessing scripts
 │   ├── data_retrieval.py      Load and standardize datasets
-│   ├── donor_selection.py     Select mouse donors with target distribution
+│   ├── donor_selection.py     Choose target distribution to subsample mouse dataset
 │   ├── ortholog_filtering.py  Filter to shared orthologs
 │   ├── proportions_diversity_jsd.py Compute diversity metrics
 │   ├── orthologs.txt          Mouse-human ortholog mapping
