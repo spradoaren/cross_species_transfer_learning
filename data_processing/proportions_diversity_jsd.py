@@ -15,7 +15,7 @@ human_samples = {"Human Sample 1": folder_path + "human_test_sample_1.h5ad",
     "Human Sample 2": folder_path + "human_test_sample_2.h5ad",
     "Human Sample 3": folder_path + "human_test_sample_3.h5ad",
     "Human Sample 4": folder_path + "human_test_sample_4.h5ad",
-    "Human Sample 5": folder_path + "human_test_sample_6.h5ad"}
+    "Human Sample 5": folder_path + "human_test_sample_5.h5ad"}
 mouse_samples = {"Mouse 1": folder_path + "mouse_1.h5ad", 
     "Mouse 2": folder_path + "mouse_2.h5ad",
     "Mouse 3": folder_path + "mouse_3.h5ad"}
