@@ -9,7 +9,7 @@ library(mclust)
 library(clevr)
 library(patchwork)
 
-mouse_sce <- readH5AD("mouse_uniform.h5ad")
+mouse_sce <- readH5AD("mouse_1.h5ad")
 human_sce <- readH5AD("human_test_sample_2.h5ad")
 
 mouse_seurat <- as.Seurat(mouse_sce, counts = NULL, data = "X")
