@@ -2,7 +2,6 @@ import anndata as ad
 import scanpy as sc
 import pandas as pd
 import numpy as np
-from IPython.display import display, Markdown
 import scanpy.external as sce
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
